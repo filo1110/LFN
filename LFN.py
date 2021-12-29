@@ -1,5 +1,7 @@
+import itertools
 import json
 import urllib.request
+from collections import OrderedDict
 from os import system
 
 import matplotlib.pyplot as plt
@@ -41,8 +43,10 @@ def analyse_graph():
     #routes_us_g = routes_us_g[routes_us_g['counts'] > 3]
     # pass this dataframe to draw the network graph of connectivities
     draw_graph(routes_us_g)
-    # calculate and show centralities(Closeness, Betweenness)
-    show_centrality(routes_us_g)
+    #calculate and show centralities(Closeness, Betweenness)
+    centralities(routes_us_g)
+    # motif, g = compute_significant_motif(routes_us_g) #get a subgraph of interest
+    # find_motif(g, motif)
 
 
 def get_routes_data():
@@ -86,39 +90,37 @@ def draw_graph(data):
     plt.axis('off')
     plt.title("Connections between Airports and Railway Stations in Europe")
     # 5. Tell matplotlib to show it
-    plt.show()
-    # plt.savefig('routes_us.png')
-    # plt.savefig('routes_us.eps', format='eps')
-    # plt.savefig('myimage.png', format='svg', dpi=1200)
+    plt.plot()
+    plt.savefig('routes_us.jpg')
 
 
-def show_centrality(data):
+def centralities(data):
     # prepare graph object using dataset
     g = nx.from_pandas_edgelist(data, source='departure_airport_iata', target='arrival_airport_iata')
     # calculate degree centrality
     deg_cen = nx.degree_centrality(g)
     data_deg_cen = pd.DataFrame(deg_cen.items())
-    # print(data)
-    data_deg_cen = data_deg_cen[data_deg_cen[1] > 0.05]
-    # data_sorted = data.sort_values(by=data[0])
-    # print(data_sorted)
     plt.bar(data_deg_cen[0], data_deg_cen[1])
     plt.xlabel('Airports')
     plt.ylabel('Degree Centrality')
     plt.show()
+    plt.savefig('degree.jpg')
+    data_sorted = data_deg_cen.sort_values(by=[1], ascending=False)
+    #print(data_sorted)
+    data_sorted.to_csv("degree_sorted.cvs", sep=' ', index=False, header=False)
 
-    # print(deg_cen)
     # calculate closeness centrality
     cl_cen = nx.closeness_centrality(g)
     data_cl_cen = pd.DataFrame(cl_cen.items())
     # print(data)
     data_cl_cen = data_cl_cen[data_cl_cen[1] > 0.05]
-    # data_sorted = data.sort_values(by=data[0])
-    # print(data_sorted)
     plt.bar(data_cl_cen[0], data_cl_cen[1])
     plt.xlabel('Airports')
     plt.ylabel('Closeness Centrality')
     plt.show()
+    plt.savefig('closeness.jpg')
+    data_sorted1 = data_cl_cen.sort_values(by=[1], ascending=False)
+    data_sorted1.to_csv("closeness_sorted.cvs", sep=' ', index=False, header=False)
 
     # print(cl_cen)
     # calculate betweenness centrality
@@ -126,14 +128,41 @@ def show_centrality(data):
     data_bet_cen = pd.DataFrame(bet_cen.items())
     # print(data)
     data_bet_cen = data_bet_cen[data_bet_cen[1] > 0.05]
-    # data_sorted = data.sort_values(by=data[0])
-    # print(data_sorted)
     plt.bar(data_bet_cen[0], data_bet_cen[1])
     plt.xlabel('Airports')
     plt.ylabel('Betweenness Centrality')
     plt.show()
-    # print(bet_cen)
+    plt.savefig('betweenness.jpg')
+    data_sorted2 = data_bet_cen.sort_values(by=[1], ascending=False)
+    data_sorted2.to_csv("betweenness_sorted.cvs", sep=' ', index=False, header=False)
 
+def compute_significant_motif(data):
+    # prepare graph object using dataset
+    #IDEA: scegliere motif utilizzando nodi con centralità maggiore
+    g = nx.from_pandas_edgelist(data, source='departure_airport_iata', target='arrival_airport_iata')
+    motif = 0
+    return motif, g
+
+def find_motif(g,motif):
+    #find input motif
+    motif_rank = max(max(motif.shortest_paths_dijkstra()))
+    result = OrderedDict.fromkeys(g.vs['label'], 0)
+
+    for node in g.vs:
+        # Get relevant nodes around node of interest that might create the motif of interest
+        nodes_to_expand = {node}
+        for rank in range(motif_rank):
+            nodes_expanded = nodes_to_expand
+            for node_to_expand in nodes_to_expand:
+                nodes_expanded = set.union(nodes_expanded, set(node_to_expand.neighbors()))
+            nodes_to_expand = nodes_expanded
+
+        # Look at all combinations
+        for sub_nodes in itertools.combinations(nodes_to_expand, motif.vcount()):
+            subg = g.subgraph(sub_nodes)
+            if subg.is_connected() and subg.isomorphic(motif):
+                result[node['label']] = result[node['label']]+1
+    return result
 
 
 # Press the green button in the gutter to run the script.
