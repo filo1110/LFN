@@ -86,8 +86,17 @@ def ComputeGraph():
     print("---------------------------------------")
     print("\n")
     print('#######################################')
-    
-    findGraphlets(finalGraph)
+    # Count triangles
+    print("\n")
+    print('Counting graphlets...')
+    print("\n")
+    print("---------------------------------------")
+    countTriangles(finalGraph)
+    print("---------------------------------------")
+    countSquares(finalGraph)
+    print("---------------------------------------")
+    print("\n")
+    print('#######################################')
     
 
 def GraphDrawing(routes, graph):
@@ -273,19 +282,40 @@ def ApproximateBetweennessCentrality(graph):
     plt.show()
 
 
-def findGraphlets(graph):
+def countTriangles(graph):
     target = nx.Graph()
     target.add_edge(1,2)
     target.add_edge(2,3)
     target.add_edge(3,1)
 
     count_triangles = 0
+    startTime = time.time()
     for sub_nodes in itertools.combinations(graph.nodes(),len(target.nodes())):
         subg = graph.subgraph(sub_nodes)
         if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
             count_triangles = count_triangles + 1
-            print(subg.edges())
-    print(count_triangles)
+            #print(subg.edges())
+    endTime = time.time()
+    print("Number of triangles: " + str(count_triangles))
+    print("Computation time: " + str(endTime-startTime))
+    
+def countSquares(graph):
+    target = nx.Graph()
+    target.add_edge(1,2)
+    target.add_edge(2,3)
+    target.add_edge(3,4)
+    target.add_edge(4,1)
+
+    count_squares = 0
+    startTime = time.time()
+    for sub_nodes in itertools.combinations(graph.nodes(),len(target.nodes())):
+        subg = graph.subgraph(sub_nodes)
+        if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
+            count_squares = count_squares + 1
+            #print(subg.edges())
+    endTime = time.time()
+    print("Number of squares: " + str(count_squares))
+    print("Computation time: " + str(endTime-startTime))
 
 
 def importRoutesDataFromJson():
@@ -304,6 +334,7 @@ def importAirportDataFromJson():
         airport_json = json.loads(url.read().decode("utf-8"))
 
     return airport_json
+
 
 
 if __name__ == '__main__':
