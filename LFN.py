@@ -7,8 +7,10 @@ import math
 import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
+import random
 from random import randrange
 import itertools
+import ssl
 
 
 def ComputeGraph():
@@ -27,13 +29,13 @@ def ComputeGraph():
         airport = airportDataFrame.query('country_code == "'+ state +'"')
         europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
 
-    europeAirportCodes = europeAirportDataFrame['code']
     #print(europeAirportDataFrame)
 
-    # To select the world graph, uncomment the next 3 lines and comment the previous for loop
+    # To select the world graph, uncomment the next 2 lines and comment the previous for loop
     #airport = airportDataFrame
     #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
-    #europeAirportCodes = europeAirportDataFrame['code']
+    
+    europeAirportCodes = europeAirportDataFrame['code']
 
     # Import data for routes
     routesJsonData = importRoutesDataFromJson()
@@ -45,10 +47,10 @@ def ComputeGraph():
     europeRoutesDataFrame['flights'] = len(routesJsonData[0]["planes"])
 
     # filtered routes for origin and destination airports within EU if you don't select the entire world
-    eruopeanRoutesDataFrame = europeRoutesDataFrame.loc[(europeRoutesDataFrame['departure_airport_iata'].isin(europeAirportCodes)) & (europeRoutesDataFrame['arrival_airport_iata'].isin(europeAirportCodes))]
+    europeanRoutesDataFrame = europeRoutesDataFrame.loc[(europeRoutesDataFrame['departure_airport_iata'].isin(europeAirportCodes)) & (europeRoutesDataFrame['arrival_airport_iata'].isin(europeAirportCodes))]
     
     # calculate the count between two airports in any direction
-    europeanRoutes = pd.DataFrame(eruopeanRoutesDataFrame.groupby(['departure_airport_iata', 'arrival_airport_iata']).size().reset_index(name='counts'))
+    europeanRoutes = pd.DataFrame(europeanRoutesDataFrame.groupby(['departure_airport_iata', 'arrival_airport_iata']).size().reset_index(name='counts'))
     
     
     # Use only the routes with more than X connections (to use it uncomment the line below)
@@ -74,15 +76,16 @@ def ComputeGraph():
     print('Computing centralities...')
     print("\n")
     print("---------------------------------------")
-    DegreeCentrality(finalGraph)
+    #degree_dict = DegreeCentrality(finalGraph)
     print("---------------------------------------")
-    ClosenessCentrality(finalGraph)
+    #closeness_dict = ClosenessCentrality(finalGraph)
     print("---------------------------------------")
-    ApproximateClosenessCentrality(finalGraph)
+    #ApproximateClosenessCentrality(finalGraph)
     print("---------------------------------------")
-    BetweennessCentrality(finalGraph)
+    #betweenness_dict = BetweennessCentrality(finalGraph)
+    #topSubGraph(finalGraph,betweenness_dict,10)
     print("---------------------------------------")
-    ApproximateBetweennessCentrality(finalGraph)
+    #ApproximateBetweennessCentrality(finalGraph)
     print("---------------------------------------")
     print("\n")
     print('#######################################')
@@ -93,7 +96,10 @@ def ComputeGraph():
     print("---------------------------------------")
     countTriangles(finalGraph)
     print("---------------------------------------")
-    countSquares(finalGraph)
+    LCC(finalGraph)
+    print("---------------------------------------")
+    approximateLCC(finalGraph,10)
+    LCCtest(finalGraph)
     print("---------------------------------------")
     print("\n")
     print('#######################################')
@@ -149,6 +155,8 @@ def DegreeCentrality(graph):
     plt.xlabel('Airports')
     plt.ylabel('Degree Centrality')
     plt.show()
+    
+    return degreeCentrality
 
 
 # Closeness centrality
@@ -158,7 +166,7 @@ def ClosenessCentrality (graph):
 
     # We use the exact algorithm in networkX
     closenessCentrality = nx.closeness_centrality(graph)
-
+    
     endTime = time.time()
     print("Closeness centrality time: " + str(endTime-startTime))
 
@@ -173,10 +181,12 @@ def ClosenessCentrality (graph):
     plt.xlabel('Airports')
     plt.ylabel('Closeness Centrality')
     plt.show()
-
+    
+    return closenessCentrality
+    
 
  # Approximate Closeness centrality   
-def ApproximateClosenessCentrality ( graph):
+def ApproximateClosenessCentrality(graph):
     # Values found with different experiments
     epsilon = 0.1
     sigma = 0.01
@@ -245,6 +255,8 @@ def BetweennessCentrality(graph):
     plt.xlabel('Airports')
     plt.ylabel('Betweenness Centrality')
     plt.show()
+    
+    return betweennessCentrality
 
 
 # Approximate Betweenness centrality  
@@ -282,39 +294,98 @@ def ApproximateBetweennessCentrality(graph):
     plt.show()
 
 
-def countTriangles(graph):
-    target = nx.Graph()
-    target.add_edge(1,2)
-    target.add_edge(2,3)
-    target.add_edge(3,1)
+def topSubGraph(graph, centrality, n):
+    sorted_tuples = sorted(centrality.items(), key=lambda item: item[1])
+    centralitySorted = {k: v for k, v in sorted_tuples}
+    first_n = list(centralitySorted.items())[len(centralitySorted)-n:]
+    list_nodes = []
+    newGraph = nx.Graph()
+    for k1,v1 in first_n:
+        for k2,v2 in first_n:
+            nodes_in_path = nx.shortest_path(graph, k1, k2)
+            for i in range(len(nodes_in_path)-1):
+                newGraph.add_node(nodes_in_path[i])
+                if(i!=len(nodes_in_path)):
+                    newGraph.add_edge(nodes_in_path[i],nodes_in_path[i+1])
+    nx.draw(newGraph, with_labels = True)
+    plt.show()
+    plt.savefig("filename.png", format="PNG")
 
-    count_triangles = 0
+    
+def countTriangles(graph):
     startTime = time.time()
-    for sub_nodes in itertools.combinations(graph.nodes(),len(target.nodes())):
-        subg = graph.subgraph(sub_nodes)
-        if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
-            count_triangles = count_triangles + 1
-            #print(subg.edges())
+    dict = nx.triangles(graph)
     endTime = time.time()
-    print("Number of triangles: " + str(count_triangles))
+    sum = 0
+    for key, value in dict.items():
+        sum = sum + value
+    sum = sum/3
+    print("Number of triangles with networkX: " + str(sum))
     print("Computation time: " + str(endTime-startTime))
     
-def countSquares(graph):
-    target = nx.Graph()
-    target.add_edge(1,2)
-    target.add_edge(2,3)
-    target.add_edge(3,4)
-    target.add_edge(4,1)
-
-    count_squares = 0
+    
+def LCC(graph):
     startTime = time.time()
-    for sub_nodes in itertools.combinations(graph.nodes(),len(target.nodes())):
-        subg = graph.subgraph(sub_nodes)
-        if nx.is_connected(subg) and nx.is_isomorphic(subg, target):
-            count_squares = count_squares + 1
-            #print(subg.edges())
+    dict = nx.clustering(graph)
     endTime = time.time()
-    print("Number of squares: " + str(count_squares))
+    print("LCC for each node with networkX: " + str(dict))
+    print("Computation time: " + str(endTime-startTime))
+
+
+def LCCtest(graph):
+    startTime = time.time()
+    lcc_dict = dict.fromkeys(nx.nodes(graph), 0)
+    for node in nx.nodes(graph):
+        neighbours=[n for n in nx.neighbors(graph,node)]
+        n_neighbors=len(neighbours)
+        n_links=0
+        if n_neighbors>1:
+            for node1 in neighbours:
+                for node2 in neighbours:
+                    if graph.has_edge(node1,node2):
+                        n_links+=1
+            n_links/=2 #because n_links is calculated twice
+            clustering_coefficient=n_links/(0.5*n_neighbors*(n_neighbors-1))
+            lcc_dict[node] = clustering_coefficient
+    endTime = time.time()
+    print("Approximated LCC for each node test: " + str(lcc_dict))
+    print("Computation time: " + str(endTime-startTime))
+    
+    
+def approximateLCC(graph,k):
+    nodes_list = nx.nodes(graph)
+    n_nodes = len(nodes_list)
+    edges_list = nx.edges(graph)
+    lcc_dict = dict.fromkeys(nodes_list, 0)
+    nodes_dict = dict.fromkeys(nodes_list, 0)
+    edges_dict = dict.fromkeys(edges_list, 0)
+    startTime = time.time()
+    for i in range(k):
+        nodes_permutation = list(nodes_list)
+        random.shuffle(nodes_permutation)
+        for v in nodes_permutation:
+            minv = n_nodes
+            for u in graph.neighbors(v):
+                tmp_min = nodes_permutation.index(u)
+                if(tmp_min < minv):
+                    minv = tmp_min
+            nodes_dict[v] = minv
+        for e in edges_list:
+            if(nodes_dict[e[0]] == nodes_dict[e[1]]):
+                edges_dict[e] = edges_dict[e] + 1
+    for v in lcc_dict.keys():
+        sum = 0
+        degv = graph.degree(v)
+        for u in graph.neighbors(v):
+            degu = graph.degree(u)
+            if((v,u) in edges_dict.keys()):
+                sum = sum + (edges_dict[(v,u)]/(edges_dict[(v,u)]+k))*(degu+degv)
+            else:
+                sum = sum + (edges_dict[(u,v)]/(edges_dict[(u,v)]+k))*(degu+degv)
+        if(degv != 1):
+            lcc_dict[v] = sum*(1/(degv*(degv-1)))
+    endTime = time.time()
+    print("Approximate LCC for each node: " + str(lcc_dict))
     print("Computation time: " + str(endTime-startTime))
 
 
@@ -329,8 +400,8 @@ def importRoutesDataFromJson():
 
 def importAirportDataFromJson():
     url = 'https://api.travelpayouts.com/data/en/airports.json'
-
-    with urllib.request.urlopen(url) as url:
+    ctx = ssl._create_unverified_context()
+    with urllib.request.urlopen(url, context=ctx) as url:
         airport_json = json.loads(url.read().decode("utf-8"))
 
     return airport_json
