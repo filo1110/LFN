@@ -19,7 +19,7 @@ def ComputeGraph():
 
     # We select only the columns we are interested in
     airportDataFrame = pd.DataFrame.from_records(airportJsonData, columns=['city_code', 'country_code','name','code'])
-
+    
     europeCountries = ["BE","BG","CZ","DK","DE","EE","IE","EL","ES","FR","HR","IT","CY","LV","LT","LU","HU","MT","NL","AT","PL","PT","RO","SI","SK","FI","SE"]
 
     europeAirportDataFrame = pd.DataFrame()
@@ -68,6 +68,7 @@ def ComputeGraph():
     GraphDrawing(europeanRoutes, finalGraph)
 
     print('Number of nodes= ' + str(finalGraph.number_of_nodes()))
+    print('Number of edges= ' + str(finalGraph.number_of_edges()))
     print("\n")
     
     print('#######################################')
@@ -83,22 +84,21 @@ def ComputeGraph():
     ApproximateClosenessCentrality(finalGraph)
     print("---------------------------------------")
     betweenness_dict = BetweennessCentrality(finalGraph)
-    topSubGraph(finalGraph,betweenness_dict,10)
     print("---------------------------------------")
     ApproximateBetweennessCentrality(finalGraph)
     print("---------------------------------------")
     print("\n")
     print('#######################################')
-    # Count triangles
     print("\n")
     print('Other features...')
     print("\n")
     print("---------------------------------------")
+    print("Maximum degree " + str(max([val for (node, val) in finalGraph.degree()])))
+    topSubGraph(finalGraph,betweenness_dict,10)
+    print("---------------------------------------")
     LCC(finalGraph)
     print("---------------------------------------")
     approximateLCC(finalGraph,10)
-    print("---------------------------------------")
-    LCCtest(finalGraph)
     print("---------------------------------------")
     print("\n")
     print('#######################################')
@@ -316,18 +316,11 @@ def topSubGraph(graph, centrality, n):
     nx.draw(newGraph, with_labels = True)
     plt.show()
     #plt.savefig("topSubGraph.png", format="PNG")
-    
-    
+
+
 def LCC(graph):
     startTime = time.time()
-    dict = nx.clustering(graph)
-    endTime = time.time()
-    print("LCC for each node with networkX: " + str(dict))
-    print("Computation time: " + str(endTime-startTime))
-
-
-def LCCtest(graph):
-    startTime = time.time()
+    
     lcc_dict = dict.fromkeys(nx.nodes(graph), 0)
     for node in nx.nodes(graph):
         neighbours=[n for n in nx.neighbors(graph,node)]
@@ -338,22 +331,25 @@ def LCCtest(graph):
                 for node2 in neighbours:
                     if graph.has_edge(node1,node2):
                         n_links+=1
-            n_links/=2 #because n_links is calculated twice
-            clustering_coefficient=n_links/(0.5*n_neighbors*(n_neighbors-1))
+            clustering_coefficient=n_links/(n_neighbors*(n_neighbors-1))
             lcc_dict[node] = clustering_coefficient
+
     endTime = time.time()
-    print("Approximated LCC for each node test: " + str(lcc_dict))
+    
+    print("LCC for each node test: " + str(lcc_dict))
     print("Computation time: " + str(endTime-startTime))
     
     
 def approximateLCC(graph,k):
+    startTime = time.time()
+
     nodes_list = nx.nodes(graph)
     n_nodes = len(nodes_list)
     edges_list = nx.edges(graph)
     lcc_dict = dict.fromkeys(nodes_list, 0)
     nodes_dict = dict.fromkeys(nodes_list, 0)
     edges_dict = dict.fromkeys(edges_list, 0)
-    startTime = time.time()
+    
     for i in range(k):
         nodes_permutation = list(nodes_list)
         random.shuffle(nodes_permutation)
@@ -378,7 +374,9 @@ def approximateLCC(graph,k):
                 sum = sum + (edges_dict[(u,v)]/(edges_dict[(u,v)]+k))*(degu+degv)
         if(degv != 1):
             lcc_dict[v] = sum*(1/(degv*(degv-1)))
+            
     endTime = time.time()
+    
     print("Approximate LCC for each node: " + str(lcc_dict))
     print("Computation time: " + str(endTime-startTime))
 
