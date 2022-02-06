@@ -25,15 +25,15 @@ def ComputeGraph():
     europeAirportDataFrame = pd.DataFrame()
 
     # Use only Europe nodes
-    for state in europeCountries:        
-        airport = airportDataFrame.query('country_code == "'+ state +'"')
-        europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
+    #for state in europeCountries:        
+        #airport = airportDataFrame.query('country_code == "'+ state +'"')
+        #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
 
     #print(europeAirportDataFrame)
 
     # To select the world graph, uncomment the next 2 lines and comment the previous for loop
-    #airport = airportDataFrame
-    #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
+    airport = airportDataFrame
+    europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
     
     europeAirportCodes = europeAirportDataFrame['code']
 
@@ -76,29 +76,28 @@ def ComputeGraph():
     print('Computing centralities...')
     print("\n")
     print("---------------------------------------")
-    #degree_dict = DegreeCentrality(finalGraph)
+    degree_dict = DegreeCentrality(finalGraph)
     print("---------------------------------------")
-    #closeness_dict = ClosenessCentrality(finalGraph)
+    closeness_dict = ClosenessCentrality(finalGraph)
     print("---------------------------------------")
-    #ApproximateClosenessCentrality(finalGraph)
+    ApproximateClosenessCentrality(finalGraph)
     print("---------------------------------------")
-    #betweenness_dict = BetweennessCentrality(finalGraph)
-    #topSubGraph(finalGraph,betweenness_dict,10)
+    betweenness_dict = BetweennessCentrality(finalGraph)
+    topSubGraph(finalGraph,betweenness_dict,10)
     print("---------------------------------------")
-    #ApproximateBetweennessCentrality(finalGraph)
+    ApproximateBetweennessCentrality(finalGraph)
     print("---------------------------------------")
     print("\n")
     print('#######################################')
     # Count triangles
     print("\n")
-    print('Counting graphlets...')
+    print('Other features...')
     print("\n")
-    print("---------------------------------------")
-    countTriangles(finalGraph)
     print("---------------------------------------")
     LCC(finalGraph)
     print("---------------------------------------")
     approximateLCC(finalGraph,10)
+    print("---------------------------------------")
     LCCtest(finalGraph)
     print("---------------------------------------")
     print("\n")
@@ -129,8 +128,9 @@ def GraphDrawing(routes, graph):
     nx.draw_networkx_labels(graph, layout, labels=originNodesLables)
 
     plt.axis('off')
-    plt.title("Connections between Airports and Railway Stations in Europe")
+    plt.title("Connections between Airports in Europe")
     plt.show()
+    #plt.savefig("connections_graph.png", format="PNG")
 
 
 # Degree centrality  
@@ -155,6 +155,7 @@ def DegreeCentrality(graph):
     plt.xlabel('Airports')
     plt.ylabel('Degree Centrality')
     plt.show()
+    #plt.savefig("exact_degree.png", format="PNG")
     
     return degreeCentrality
 
@@ -181,6 +182,7 @@ def ClosenessCentrality (graph):
     plt.xlabel('Airports')
     plt.ylabel('Closeness Centrality')
     plt.show()
+    #plt.savefig("exact_closeness.png", format="PNG")
     
     return closenessCentrality
     
@@ -192,9 +194,10 @@ def ApproximateClosenessCentrality(graph):
     sigma = 0.01
     nodesDictionary = []
     nodesList = []
+    n_nodes = graph.number_of_nodes()
     
     # Finding the lower bound k for which we have great approximation
-    lowerLimitK = math.ceil((1/(2*pow(epsilon, 2)))*math.log((2*graph.number_of_nodes())/sigma,10)*pow(graph.number_of_nodes()/(graph.number_of_nodes()-1), 2))
+    lowerLimitK = math.ceil((1/(2*pow(epsilon, 2)))*math.log((2*n_nodes)/sigma,10)*pow(n_nodes/(n_nodes-1), 2))
     print("Selected k for ApproximateClosenessCentrality: " + str(lowerLimitK))    
 
     # Our implementation of the Eppstein-Wang algorithm
@@ -214,11 +217,11 @@ def ApproximateClosenessCentrality(graph):
             nodesDictionary[nodeKey] = nodesDictionary[nodeKey] + randomDIctionary[nodeKey]
 
     for nodeKey, nodeValue in nodesDictionary.items():
-        nodesDictionary[nodeKey] = 1/((graph.number_of_nodes()*nodeValue)/(lowerLimitK*(graph.number_of_nodes()-1)))
+        nodesDictionary[nodeKey] = 1/((n_nodes*nodeValue)/(lowerLimitK*(n_nodes-1)))
     #Finish implementation of Eppstein-Wang algorithm
 
     endTime = time.time()
-    print("Approximate Closeness centrality time: " + str(endTime-startTime))
+    print("Approximated Closeness centrality time: " + str(endTime-startTime))
 
     approxClosenessDataFrame = pd.DataFrame(nodesDictionary.items())
     #print(approxClosenessDataFrame)
@@ -231,6 +234,7 @@ def ApproximateClosenessCentrality(graph):
     plt.xlabel('Airports')
     plt.ylabel('Approximated Closeness Centrality')
     plt.show()
+    #plt.savefig("appr_closeness.png", format="PNG")
 
 
 # Betweenness centrality
@@ -255,6 +259,7 @@ def BetweennessCentrality(graph):
     plt.xlabel('Airports')
     plt.ylabel('Betweenness Centrality')
     plt.show()
+    #plt.savefig("exact_betweenness.png", format="PNG")
     
     return betweennessCentrality
 
@@ -279,7 +284,7 @@ def ApproximateBetweennessCentrality(graph):
     approximateBetweenness = nx.betweenness_centrality(graph, lowerLimitK)
 
     endTime = time.time()
-    print("Betweenness centrality time: " + str(endTime-startTime))
+    print("Approximated Betweenness centrality time: " + str(endTime-startTime))
 
     approximateBetweennessDataFrame = pd.DataFrame(approximateBetweenness.items())
     #print(approximateBetweennessDataFrame)
@@ -292,6 +297,7 @@ def ApproximateBetweennessCentrality(graph):
     plt.xlabel('Airports')
     plt.ylabel('Approximated Betweenness Centrality')
     plt.show()
+    #plt.savefig("appr_betweennees.png", format="PNG")
 
 
 def topSubGraph(graph, centrality, n):
@@ -309,19 +315,7 @@ def topSubGraph(graph, centrality, n):
                     newGraph.add_edge(nodes_in_path[i],nodes_in_path[i+1])
     nx.draw(newGraph, with_labels = True)
     plt.show()
-    plt.savefig("filename.png", format="PNG")
-
-    
-def countTriangles(graph):
-    startTime = time.time()
-    dict = nx.triangles(graph)
-    endTime = time.time()
-    sum = 0
-    for key, value in dict.items():
-        sum = sum + value
-    sum = sum/3
-    print("Number of triangles with networkX: " + str(sum))
-    print("Computation time: " + str(endTime-startTime))
+    #plt.savefig("topSubGraph.png", format="PNG")
     
     
 def LCC(graph):
