@@ -25,15 +25,15 @@ def ComputeGraph():
     europeAirportDataFrame = pd.DataFrame()
 
     # Use only Europe nodes
-    for state in europeCountries:
-        airport = airportDataFrame.query('country_code == "'+ state +'"')
-        europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
+    #for state in europeCountries:        
+        #airport = airportDataFrame.query('country_code == "'+ state +'"')
+        #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
 
     #print(europeAirportDataFrame)
 
     # To select the world graph, uncomment the next 2 lines and comment the previous for loop
-    #airport = airportDataFrame
-    #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
+    airport = airportDataFrame
+    europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
     
     europeAirportCodes = europeAirportDataFrame['code']
 
@@ -70,7 +70,7 @@ def ComputeGraph():
     #print('Number of nodes= ' + str(finalGraph.number_of_nodes()))
     #print('Number of edges= ' + str(finalGraph.number_of_edges()))
     #print("\n")
-    
+
     # Compute centralities
     print('Computing centralities...')
     print("\n")
@@ -85,7 +85,7 @@ def ComputeGraph():
 
     betweenness_dict = BetweennessCentrality(finalGraph)
     print("\n")
-
+    
     ApproximateBetweennessCentrality(finalGraph)
 
     print('\n\nOther features...\n')
@@ -146,7 +146,7 @@ def DegreeCentrality(graph):
     #print(degreeCentralityDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    #degreeCentralityDataFrame = degreeCentralityDataFrame[degreeCentralityDataFrame[1] > 0.25]
+    degreeCentralityDataFrame = degreeCentralityDataFrame[degreeCentralityDataFrame[1] > 0.055]
 
     #Plotting the results
     plt.bar(degreeCentralityDataFrame[0], degreeCentralityDataFrame[1])
@@ -174,7 +174,7 @@ def ClosenessCentrality (graph):
     #print(closenessCentralityDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    #closenessCentralityDataFrame = closenessCentralityDataFrame[closenessCentralityDataFrame[1] > 0.55]
+    closenessCentralityDataFrame = closenessCentralityDataFrame[closenessCentralityDataFrame[1] > 0.32]
 
     #Plotting the results
     plt.bar(closenessCentralityDataFrame[0], closenessCentralityDataFrame[1])
@@ -227,7 +227,7 @@ def ApproximateClosenessCentrality(graph):
     #print(approxClosenessDataFrame)
     
     # Uncomment the line below if you want to select less centrality in the plot
-    # approxClosenessDataFrame = approxClosenessDataFrame[approxClosenessDataFrame[1] > 0.55]
+    approxClosenessDataFrame = approxClosenessDataFrame[approxClosenessDataFrame[1] > 0.32]
 
     #Plotting the results    
     plt.bar(approxClosenessDataFrame[0], approxClosenessDataFrame[1])
@@ -253,7 +253,7 @@ def BetweennessCentrality(graph):
     #print(betweennessCentralityDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    # betweennessCentralityDataFrame = betweennessCentralityDataFrame[betweennessCentralityDataFrame[1] > 0.05]
+    betweennessCentralityDataFrame = betweennessCentralityDataFrame[betweennessCentralityDataFrame[1] > 0.04]
 
     #Plotting the results
     plt.bar(betweennessCentralityDataFrame[0], betweennessCentralityDataFrame[1])
@@ -292,7 +292,7 @@ def ApproximateBetweennessCentrality(graph):
     #print(approximateBetweennessDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    # approximateBetweennessDataFrame = approximateBetweennessDataFrame[approximateBetweennessDataFrame[1] > 0.05]
+    approximateBetweennessDataFrame = approximateBetweennessDataFrame[approximateBetweennessDataFrame[1] > 0.04]
 
     #Plotting the results
     plt.bar(approximateBetweennessDataFrame[0], approximateBetweennessDataFrame[1])
@@ -331,13 +331,17 @@ def LocalClusteringCoefficent(graph):
 
     endTime = time.time()
     
-    print("LCC for each node test: " + str(localClusteringDictionary))
+    print("LCC for each node: " + str(localClusteringDictionary))
     print("Computation time: " + str(endTime-startTime))
+    
     LCCDataFrame = pd.DataFrame(localClusteringDictionary.items())
+        
+    #Plotting the results
     plt.bar(LCCDataFrame[0], LCCDataFrame[1])
     plt.xlabel('Airports')
-    plt.ylabel('Local Clustering Coefficient')
+    plt.ylabel('LCC')
     plt.show()
+
     
 
 # Approximate Local Clustering Coefficent
@@ -390,18 +394,25 @@ def ApproximateLocalClusteringCoefficent(graph,k):
                 sum = sum + (edgesDictionary[(neighbour,v)]/(edgesDictionary[(neighbour,v)]+k))*(uDegree+nodeDegree)
 
         if(nodeDegree != 1):
-            localClusteringDictionary[v] = sum*(1/(nodeDegree*(nodeDegree-1)))
+            if(sum*(1/(nodeDegree*(nodeDegree-1)))<1):
+                localClusteringDictionary[v] = sum*(1/(nodeDegree*(nodeDegree-1)))
+            else:
+                localClusteringDictionary[v] = 1
     #End implementation of the algorithm
             
     endTime = time.time()
     
     print("Approximate LCC for each node: " + str(localClusteringDictionary))
     print("Computation time: " + str(endTime-startTime))
+    
     approximateLCCDataFrame = pd.DataFrame(localClusteringDictionary.items())
+        
+    #Plotting the results
     plt.bar(approximateLCCDataFrame[0], approximateLCCDataFrame[1])
     plt.xlabel('Airports')
-    plt.ylabel('Approximate Local Clustering Coefficient')
+    plt.ylabel('Approximate LCC')
     plt.show()
+
 
 
 # Computing the sub graph with the top N nodes for every kind of centrality measure
