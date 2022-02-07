@@ -74,26 +74,26 @@ def ComputeGraph():
     # Compute centralities
     print('Computing centralities...')
     print("\n")
-    # degree_dict = DegreeCentrality(finalGraph)
-    # print("\n")
-    #
-    # closeness_dict = ClosenessCentrality(finalGraph)
-    # print("\n")
-    #
-    # ApproximateClosenessCentrality(finalGraph)
-    # print("\n")
-    #
-    # betweenness_dict = BetweennessCentrality(finalGraph)
-    # print("\n")
-    #
-    # ApproximateBetweennessCentrality(finalGraph)
-    #
-    # print('\n\nOther features...\n')
-    #
-    # print("\n")
-    #
-    # SubGraphWithTopNodes(finalGraph,betweenness_dict,10)
-    # print("\n")
+    degree_dict = DegreeCentrality(finalGraph)
+    print("\n")
+
+    closeness_dict = ClosenessCentrality(finalGraph)
+    print("\n")
+
+    ApproximateClosenessCentrality(finalGraph)
+    print("\n")
+
+    betweenness_dict = BetweennessCentrality(finalGraph)
+    print("\n")
+
+    ApproximateBetweennessCentrality(finalGraph)
+
+    print('\n\nOther features...\n')
+
+    print("\n")
+
+    SubGraphWithTopNodes(finalGraph,betweenness_dict,10)
+    print("\n")
 
     LocalClusteringCoefficent(finalGraph)
     print("\n")
