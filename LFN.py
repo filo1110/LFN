@@ -25,7 +25,7 @@ def ComputeGraph():
     europeAirportDataFrame = pd.DataFrame()
 
     # Use only Europe nodes
-    for state in europeCountries:        
+    for state in europeCountries:
         airport = airportDataFrame.query('country_code == "'+ state +'"')
         europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
 
@@ -74,26 +74,26 @@ def ComputeGraph():
     # Compute centralities
     print('Computing centralities...')
     print("\n")
-    degree_dict = DegreeCentrality(finalGraph)
-    print("\n")
-
-    closeness_dict = ClosenessCentrality(finalGraph)
-    print("\n")
-
-    ApproximateClosenessCentrality(finalGraph)
-    print("\n")
-
-    betweenness_dict = BetweennessCentrality(finalGraph)
-    print("\n")
-    
-    ApproximateBetweennessCentrality(finalGraph)
-
-    print('\n\nOther features...\n')
-
-    print("\n")
-
-    SubGraphWithTopNodes(finalGraph,betweenness_dict,10)
-    print("\n")
+    # degree_dict = DegreeCentrality(finalGraph)
+    # print("\n")
+    #
+    # closeness_dict = ClosenessCentrality(finalGraph)
+    # print("\n")
+    #
+    # ApproximateClosenessCentrality(finalGraph)
+    # print("\n")
+    #
+    # betweenness_dict = BetweennessCentrality(finalGraph)
+    # print("\n")
+    #
+    # ApproximateBetweennessCentrality(finalGraph)
+    #
+    # print('\n\nOther features...\n')
+    #
+    # print("\n")
+    #
+    # SubGraphWithTopNodes(finalGraph,betweenness_dict,10)
+    # print("\n")
 
     LocalClusteringCoefficent(finalGraph)
     print("\n")
@@ -333,7 +333,11 @@ def LocalClusteringCoefficent(graph):
     
     print("LCC for each node test: " + str(localClusteringDictionary))
     print("Computation time: " + str(endTime-startTime))
-
+    LCCDataFrame = pd.DataFrame(localClusteringDictionary.items())
+    plt.bar(LCCDataFrame[0], LCCDataFrame[1])
+    plt.xlabel('Airports')
+    plt.ylabel('Local Clustering Coefficient')
+    plt.show()
     
 
 # Approximate Local Clustering Coefficent
@@ -393,7 +397,11 @@ def ApproximateLocalClusteringCoefficent(graph,k):
     
     print("Approximate LCC for each node: " + str(localClusteringDictionary))
     print("Computation time: " + str(endTime-startTime))
-
+    approximateLCCDataFrame = pd.DataFrame(localClusteringDictionary.items())
+    plt.bar(approximateLCCDataFrame[0], approximateLCCDataFrame[1])
+    plt.xlabel('Airports')
+    plt.ylabel('Approximate Local Clustering Coefficient')
+    plt.show()
 
 
 # Computing the sub graph with the top N nodes for every kind of centrality measure
