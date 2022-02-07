@@ -25,15 +25,15 @@ def ComputeGraph():
     europeAirportDataFrame = pd.DataFrame()
 
     # Use only Europe nodes
-    #for state in europeCountries:        
-        #airport = airportDataFrame.query('country_code == "'+ state +'"')
-        #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
+    for state in europeCountries:        
+        airport = airportDataFrame.query('country_code == "'+ state +'"')
+        europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
 
     #print(europeAirportDataFrame)
 
     # To select the world graph, uncomment the next 2 lines and comment the previous for loop
-    airport = airportDataFrame
-    europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
+    #airport = airportDataFrame
+    #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
     
     europeAirportCodes = europeAirportDataFrame['code']
 
@@ -146,7 +146,7 @@ def DegreeCentrality(graph):
     #print(degreeCentralityDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    degreeCentralityDataFrame = degreeCentralityDataFrame[degreeCentralityDataFrame[1] > 0.055]
+    #degreeCentralityDataFrame = degreeCentralityDataFrame[degreeCentralityDataFrame[1] > 0.055]
 
     #Plotting the results
     plt.bar(degreeCentralityDataFrame[0], degreeCentralityDataFrame[1])
@@ -174,7 +174,7 @@ def ClosenessCentrality (graph):
     #print(closenessCentralityDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    closenessCentralityDataFrame = closenessCentralityDataFrame[closenessCentralityDataFrame[1] > 0.32]
+    #closenessCentralityDataFrame = closenessCentralityDataFrame[closenessCentralityDataFrame[1] > 0.38]
 
     #Plotting the results
     plt.bar(closenessCentralityDataFrame[0], closenessCentralityDataFrame[1])
@@ -227,7 +227,7 @@ def ApproximateClosenessCentrality(graph):
     #print(approxClosenessDataFrame)
     
     # Uncomment the line below if you want to select less centrality in the plot
-    approxClosenessDataFrame = approxClosenessDataFrame[approxClosenessDataFrame[1] > 0.32]
+    #approxClosenessDataFrame = approxClosenessDataFrame[approxClosenessDataFrame[1] > 0.38]
 
     #Plotting the results    
     plt.bar(approxClosenessDataFrame[0], approxClosenessDataFrame[1])
@@ -253,7 +253,7 @@ def BetweennessCentrality(graph):
     #print(betweennessCentralityDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    betweennessCentralityDataFrame = betweennessCentralityDataFrame[betweennessCentralityDataFrame[1] > 0.04]
+    #betweennessCentralityDataFrame = betweennessCentralityDataFrame[betweennessCentralityDataFrame[1] > 0.04]
 
     #Plotting the results
     plt.bar(betweennessCentralityDataFrame[0], betweennessCentralityDataFrame[1])
@@ -292,7 +292,7 @@ def ApproximateBetweennessCentrality(graph):
     #print(approximateBetweennessDataFrame)
 
     # Uncomment the line below if you want to select less centrality in the plot
-    approximateBetweennessDataFrame = approximateBetweennessDataFrame[approximateBetweennessDataFrame[1] > 0.04]
+    #approximateBetweennessDataFrame = approximateBetweennessDataFrame[approximateBetweennessDataFrame[1] > 0.04]
 
     #Plotting the results
     plt.bar(approximateBetweennessDataFrame[0], approximateBetweennessDataFrame[1])
