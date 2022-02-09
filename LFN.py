@@ -29,8 +29,6 @@ def ComputeGraph():
         airport = airportDataFrame.query('country_code == "'+ state +'"')
         europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
 
-    #print(europeAirportDataFrame)
-
     # To select the world graph, uncomment the next 2 lines and comment the previous for loop
     #airport = airportDataFrame
     #europeAirportDataFrame = pd.concat([europeAirportDataFrame, airport])
@@ -66,10 +64,6 @@ def ComputeGraph():
     
     # Draw the graph
     GraphDrawing(europeanRoutes, finalGraph)
-
-    #print('Number of nodes= ' + str(finalGraph.number_of_nodes()))
-    #print('Number of edges= ' + str(finalGraph.number_of_edges()))
-    #print("\n")
 
     # Compute centralities
     print('Computing centralities...')
@@ -115,7 +109,7 @@ def GraphDrawing(routes, graph):
     size = [graph.degree(node) * 80 for node in graph.nodes() if node in routes.arrival_airport_iata.unique()]
     nx.draw_networkx_nodes(graph, layout, nodelist=destinationNode, node_size=size, node_color='lightblue')
 
-    # Use differente colors for the High Degree Nodes
+    # Use different colors for the High Degree Nodes
     originNode = [node for node in graph.nodes() if node in routes.departure_airport_iata.unique()]
     nx.draw_networkx_nodes(graph, layout, nodelist=originNode, node_size=100, node_color='#AAAAAA')
 
